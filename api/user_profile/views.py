@@ -1,7 +1,11 @@
 from rest_framework import permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from .serializers import User, UserSerializer
 from .permissions import IsProfileOwner
+
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class UserViewSet(ModelViewSet):
@@ -26,3 +30,14 @@ class UserViewSet(ModelViewSet):
             return queryset
         else:
             return super().get_queryset()
+
+    @action(detail=False, url_name="request_user", methods=["GET",], )
+    def request_user(self, request):
+        try:
+            request_user = User.objects.get(pk=self.request.user.id)
+            serialized_data = self.get_serializer_class()(request_user).data
+            return Response({"data": serialized_data})
+        except ObjectDoesNotExist as error:
+            return Response({"data": "User does not exist"})
+
+
