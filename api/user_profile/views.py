@@ -1,6 +1,7 @@
 from rest_framework import permissions
 from rest_framework.viewsets import ModelViewSet
 from .serializers import User, UserSerializer
+from .permissions import IsProfileOwner
 
 
 class UserViewSet(ModelViewSet):
@@ -13,7 +14,9 @@ class UserViewSet(ModelViewSet):
         if self.action == "create":
             permissions_classes = [permissions.AllowAny,]
         elif self.action == "list":
-            permissions_classes = [permissions.IsAuthenticated]
+            permissions_classes = [permissions.IsAuthenticated,]
+        elif self.action in ("update", "partial_update"):
+            permissions_classes = [permissions.IsAuthenticated, IsProfileOwner]
         return [permission() for permission in permissions_classes]
 
     def get_queryset(self):
